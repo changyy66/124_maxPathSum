@@ -43,69 +43,70 @@ struct TreeNode {
     TreeNode(int x) : val(x), left(NULL), right(NULL) {}
 };
 
+#define max(a,b) ((a)>(b)?(a):(b))
 class Solution {
 public:
 	int maxNum = 0x80000000;
 	int maxSum(TreeNode* root)
 	{
-		if (root->left == NULL&&root->right == NULL)
+		if (root->left==NULL&&root->right==NULL)
 		{
-			if (root->val > maxNum)maxNum = root->val;
+			maxNum = max(maxNum, root->val);
 			return root->val;
 		}
-		if (root->left == NULL)
+		int maxL = 0x80000000;
+		int maxR = 0x80000000;
+		if (root->left)maxL = maxSum(root->left);
+		if (root->right)maxR = maxSum(root->right);
+	
+		int maxLR = max(maxL, maxR);
+		if (maxLR<0)
 		{
-			int n = maxSum(root->right);
-			if (n < 0)
+			maxLR = max(maxLR, root->val);
+			maxNum = max(maxNum, maxLR);
+			return root->val;
+		}
+		else
+		{
+			int n = 0;
+			if (root->val>0)
 			{
-				n = root->val;
+				n += root->val;
+				if (maxL > 0)
+				{
+					n += maxL;
+				}
+				if (maxR > 0)
+				{
+					n += maxR;
+				}
 			}
 			else
 			{
-				n += root->val;
+				n = maxLR;
+				if (maxLR==maxL)
+				{
+					if (maxR>0&& maxR+ root->val>0)
+					{
+						n = maxL + maxR + root->val;
+					}
+				}
+				else
+				{
+					if (maxL>0&&maxL+ root->val>0)
+					{
+						n = maxL + maxR + root->val;
+					}
+				}
 			}
-			if (n > maxNum)
-			{
-				maxNum = n;
-			}
-			return n;
+			maxNum = max(maxNum, n);
+			return root->val + maxLR;
 		}
-		if (root->right == NULL)
-		{
-			int n = maxSum(root->left);
-			if (n < 0)
-			{
-				n = root->val;
-			}
-			else
-			{
-				n += root->val;
-			}
-			if (n > maxNum)
-			{
-				maxNum = n;
-			}
-			return n;
-		}
-		int m = maxSum(root->left);
-		int n = maxSum(root->right);
-
-		int k = root->val;
-		if (m > 0)k += m;
-		if (n > 0)k += n;
-		if (k > maxNum)
-		{
-			maxNum = k;
-		}
-		int kk = m > n ? m : n;
-		if (kk > 0)
-			return root->val + kk;
-		return root->val;
 	}
 
 	int maxPathSum(TreeNode* root) {
-		int n = maxSum(root);
-		return n > maxNum ? n : maxNum;
+		maxSum(root);
+		return  maxNum;
 	}
 };
 
